@@ -10,6 +10,13 @@
 
 defined( 'ABSPATH' ) or die();
 
+//sets a vesion number to files to bust some caches
+function set_plugin_version(){
+    define('DAILY_MENU_VERSION', "0.0.1");
+
+}
+add_action('init', 'set_plugin_version');
+
 //creates the daily menu post type
 function create_daily_menu_post_type(){
     $labels = array(
@@ -72,3 +79,26 @@ function add_privelages_to_daily_menu(){
     }
 }
 add_action('admin_init', 'add_privelages_to_daily_menu');
+
+// live streaming widget
+function daily_menu_widget() {
+    wp_enqueue_script('daily-menu-widget', plugins_url( '/admin/dashboard-widget.js', __FILE__ ), array('jquery'), DAILY_MENU_VERSION);
+?>
+    <h1>Today's Menu</h1>
+    <div class="daily-menu widget-footer">
+        <label class="h3" for="food-category">Create a food category</label>
+        <br>
+        <input type="text" id="food-category" name="food-category">
+        <br>
+        <button class="button btn-primary">Add Category</button>
+    </div>
+<?php
+}
+function add_daily_menu_widget() {
+    $user = wp_get_current_user();
+    $role = $user->roles[0];
+    if($role == 'administrator' | $role == 'editor'){
+        wp_add_dashboard_widget('daily_menu_widget', 'Daily Specials', 'daily_menu_widget', 1);
+    }
+}
+add_action('wp_dashboard_setup', 'add_daily_menu_widget', 1);
